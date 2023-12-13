@@ -8,6 +8,8 @@ from data_loader import CustomDataLoader
 from utils import make_folder
 from augmentations import *
 
+import os
+os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
 
 def main(config):
     cudnn.enabled = True

@@ -51,7 +51,7 @@ class Tester(object):
         self.test_colorful = config.test_colorful
         self.test_color_label_path = osp.join(config.test_color_label_path, self.arch)
         self.test_pred_label_path = osp.join(config.test_pred_label_path, self.arch)
-
+        
         self.build_model()
 
     def test(self):
@@ -67,7 +67,7 @@ class Tester(object):
         metrics.reset()
         
         index = 0
-        for index, (images, labels) in enumerate(self.data_loader):
+        for index, (images, labels, img_ids) in enumerate(self.data_loader):
             print('processing batch %d' % (index))
             if (index + 1) % 100 == 0:
                 print('%d batches processd' % (index + 1))
@@ -90,7 +90,6 @@ class Tester(object):
                 pred = outputs.data.max(1)[1].cpu().numpy()  # Matrix index
                 gt = labels.cpu().numpy()
                 metrics.update(gt, pred)
-
             torch.cuda.synchronize()
             time_meter.update(time.perf_counter() - tic)
 
@@ -104,9 +103,11 @@ class Tester(object):
                 compare_predict_color = generate_compare_results(images, labels_real, outputs, self.imsize)
                 for k in range(self.batch_size):
                     # save_image(labels_predict_color[k], osp.join(self.test_color_label_path, str(index * self.batch_size + k) +'.png'))
-                    cv2.imwrite(osp.join(self.test_pred_label_path, str(index * self.batch_size + k) +'.png'), labels_predict_plain[k])
-                    save_image(compare_predict_color[k], osp.join(self.test_color_label_path, str(index * self.batch_size + k) +'.png'))
-
+                    # cv2.imwrite(osp.join(self.test_pred_label_path, str(index * self.batch_size + k) +'.png'), labels_predict_plain[k])
+                    # save_image(compare_predict_color[k], osp.join(self.test_color_label_path, str(index * self.batch_size + k) +'.png'))
+                    cv2.imwrite(osp.join(self.test_pred_label_path, str(img_ids[k]) +'.png'), labels_predict_plain[k])
+                    save_image(compare_predict_color[k], osp.join(self.test_color_label_path, str(img_ids[k]) +'.png'))
+                    
         print("----------------- Runtime Performance ------------------")
         print('Total %d batches (%d images) tested.' % (index + 1, (index+1)*images.size(0)))
         print("Inference Time per image: {:.4f}s".format(time_meter.average() / images.size(0)))

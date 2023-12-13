@@ -26,19 +26,19 @@ class CelebAMaskHQ(Dataset):
             self.num_images = len(self.test_dataset)
 
     def preprocess(self):
-        for i in range(len([name for name in os.listdir(self.img_path) if osp.isfile(osp.join(self.img_path, name))])):
+        for i in [name for name in os.listdir(self.img_path) if osp.isfile(osp.join(self.img_path, name))]:
+            i = i.split(".")[0]
             img_path = osp.join(self.img_path, str(i)+'.jpg')
             label_path = osp.join(self.label_path, str(i)+'.png')
-
+            img_id = i
             if self.mode:
                 self.train_dataset.append([img_path, label_path])
             else:
-                self.test_dataset.append([img_path, label_path])
+                self.test_dataset.append([img_path, label_path, img_id])
 
     def __getitem__(self, index):
         dataset = self.train_dataset if self.mode == True else self.test_dataset
-        img_path, label_path = dataset[index]
-
+        img_path, label_path, img_id = dataset[index]
         # Uniform image size
         image = Image.open(img_path).convert("RGB")
         label = Image.open(label_path).convert("L")
@@ -62,7 +62,7 @@ class CelebAMaskHQ(Dataset):
             image = img_transform(image)
             mask = mask_transform(label)
 
-            return image, mask
+            return image, mask, img_id
 
     def __len__(self):
         return self.num_images
